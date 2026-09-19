@@ -113,9 +113,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ${{ secrets.TESTUSER }}
-          POSTGRES_PASSWORD: ${{ secrets.TESTPASS }}
-          POSTGRES_DB: ${{ secrets.TESTDB }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
         ports:
           - 5432:5432
         options: >-
@@ -145,12 +145,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Instalar Railway CLI
         run: npm install -g @railway/cli
-      - name: Vincular Proyecto y Desplegar a Railway (staging)
-        run: |
-          railway link 329a321f-b981-48ab-9408-e0a8ac1f5aec
-          railway up --service backend --environment staging
+
+      - name: Desplegar a Railway (staging)
+        working-directory: ./backend
+        run: railway up --service backend --environment staging
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
+          RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
