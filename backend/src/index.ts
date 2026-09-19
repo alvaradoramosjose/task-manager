@@ -164,6 +164,10 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' })
+});
+
 if (process.env.NODE_ENV !== 'test') {
     const PORT = 4000;
     app.listen(PORT, () => {
