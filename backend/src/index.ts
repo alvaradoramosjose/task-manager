@@ -160,12 +160,12 @@ app.delete("/tasks/:id", authenticateToken, async (req: any, res: any) => {
     res.json({ message: "Task deleted successfully" });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' })
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 if (process.env.NODE_ENV !== 'test') {
