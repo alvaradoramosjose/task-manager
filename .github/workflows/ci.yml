@@ -5,7 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-
+  workflow_dispatch:
+    inputs:
+      confirmacion:
+        description: "Escribe DEPLOY para confirmar el despliegue a produccion"
+        required: false
+        
 jobs:
   frontend:
     name: Frontend - Lint & Build
@@ -149,6 +154,19 @@ jobs:
         run: npm install -g @railway/cli
       - name: Desplegar a Railway (staging)
         run: railway up --service backend --environment staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
+  
+  deploy-produccion:
+    name: Deploy a Producción (manual)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmacion == 'DEPLOY'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g @railway/cli
+      - name: Vincular Proyecto y Desplegar a Railway (produccion)
+        run: railway up --service task-manger --environment production
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
