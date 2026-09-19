@@ -15,8 +15,6 @@ app.use(express.json());
 
 const SECRET_KEY = "secret_key";
 
-const apiKey = process.env.API_KEY || 1234;
-
 const authenticateToken = (req: any, res: any, next: any) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
