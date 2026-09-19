@@ -138,7 +138,7 @@ jobs:
       - run: npx prisma migrate deploy
   deploy-staging:
     name: Deploy a Staging
-    needs: [frontend, backend, pruebas, e2e, migraciones]
+    needs: [frontend, backend, test, e2e, migraciones]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
