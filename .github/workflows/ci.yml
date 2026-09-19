@@ -147,9 +147,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Instalar Railway CLI
         run: npm install -g @railway/cli
-      - name: Vincular Proyecto y Desplegar a Railway (staging)
-        run: |
-          railway link 329a321f-b981-48ab-9408-e0a8ac1f5aec
-          railway up --service backend --environment staging
+      - name: Desplegar a Railway (staging)
+        run: railway up --service backend --environment staging
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
