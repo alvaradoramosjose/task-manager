@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
     "lint": "eslint src/ --ext .ts",
-    "build": "prisma generate && tsc",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "keywords": [],
