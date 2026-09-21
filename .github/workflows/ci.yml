@@ -5,7 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-
+  workflow_dispatch:
+    inputs:
+      confirmacion:
+        description: "Escribe DEPLOY para confirmar el despliegue a produccion"
+        required: false
+        
 jobs:
   frontend:
     name: Frontend - Lint & Build
@@ -74,7 +79,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db?schema=public"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -105,3 +110,63 @@ jobs:
       - name: Run E2E tests
         run: npx playwright test
         working-directory: ./frontend
+  
+  migraciones:
+    name: Migraciones y Seeds
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: ./backend
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npx prisma db seed
+  
+  deploy-staging:
+    name: Deploy a Staging
+    needs: [frontend, backend, test, e2e, migraciones]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar Railway CLI
+        run: npm install -g @railway/cli
+      - name: Desplegar a Railway (staging)
+        run: railway up --service backend --environment staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
+  
+  deploy-produccion:
+    name: Deploy a Producción (manual)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmacion == 'DEPLOY'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g @railway/cli
+      - name: Vincular Proyecto y Desplegar a Railway (produccion)
+        run: railway up --service e0d80cf3-64bf-49a1-9979-eb9ef210fde5 --environment e8978011-8104-440a-889b-bb199f1961f9
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 329a321f-b981-48ab-9408-e0a8ac1f5aec
